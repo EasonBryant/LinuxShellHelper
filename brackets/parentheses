@@ -1,0 +1,228 @@
+#!/bin/sh
+
+command_group_usage()
+{
+    echo -e "\n命令组用途："
+    echo -e "括号中的命令将会新开一个子shell顺序执行，所以括号中的变量不能够被脚本余下的部分使用。"
+    echo -e "括号中多个命令之间用分号隔开，最后一个命令可以没有分号，各命令和括号之间不必有空格。\n"
+    echo "示例："
+    echo -e "> vartest=\"hello\""
+    echo -e "> echo \$vartest"
+    echo -e "hello"
+    echo -e "> (vartest=\"world\";echo \$vartest)"
+    echo -e "world"
+    echo -e "> echo \$vartest"
+    echo -e "hello\n"
+    echo -e "下面输入框可直接输入命令，'\\\\r'返回上一级，'\q'退出"
+}
+
+command_group()
+{
+    command_group_usage
+
+    while read -e -r -a input -p "single parentheses commandgroup> "
+    do
+        if [[ $input == '\r' ]]
+        then
+            break
+        elif [[ $input == '\q' ]]
+        then
+            exit 1
+        elif [[ $input == '\h' ]]
+        then
+            command_group_usage
+        else
+            eval ${input[@]}
+            if [ $? -ne 0 ]
+            then
+                echo -e "输入'\h'来获取帮助信息。"
+            fi
+            continue
+        fi
+    done
+}
+
+command_replace_usage()
+{
+    echo -e "\n命令替换用途："
+    echo -e "等同于\`cmd\`，shell扫描一遍命令行，发现了\$(cmd)结构，便将\$(cmd)中的cmd执行一次，得到其标准输出，再将此输出放到原来命令。\n"
+    echo "示例："
+    echo -e "> year=\`date +%Y\`"
+    echo -e "> echo \$year"
+    echo -e "2014"
+    echo -e "> month=\$(date +%m)"
+    echo -e "> echo \$month"
+    echo -e "05\n"
+    echo -e "下面输入框可直接输入命令，'\\\\r'返回上一级，'\q'退出"
+}
+
+command_replace()
+{
+    command_replace_usage
+
+    while read -e -r -a input -p "single parentheses commandreplace> "
+    do
+        if [[ $input == '\r' ]]
+        then
+            break
+        elif [[ $input == '\q' ]]
+        then
+            exit 1
+        elif [[ $input == '\h' ]]
+        then
+            command_replace_usage
+        else
+            eval ${input[@]}
+            if [ $? -ne 0 ]
+            then
+                echo -e "输入'\h'来获取帮助信息。"
+            fi
+            continue
+        fi
+    done
+}
+
+init_array_usage()
+{
+    echo -e "\n初始化数组用途："
+    echo -e "用于初始化数组。如：array=(1 2 3 4)"
+    echo "示例："
+    echo -e "> array=(1 2 3 4)"
+    echo -e "> echo \"数组元素个数：\${#array[@]}\""
+    echo -e "数组元素个数：4"
+    echo -e "> echo \"数组所有元素：\${array[@]}\""
+    echo -e "数组所有元素：1 2 3 4"
+    echo -e "> echo \"数组第二个元素：\${array[1]}\""
+    echo -e "数组第二个元素：2\n"
+    echo -e "下面输入框可直接输入命令，'\\\\r'返回上一级，'\q'退出"
+}
+
+init_array()
+{
+    init_array_usage
+
+    while read -e -r -a input -p "single parentheses initarray> "
+    do
+        if [[ $input == '\r' ]]
+        then
+            break
+        elif [[ $input == '\q' ]]
+        then
+            exit 1
+        elif [[ $input == '\h' ]]
+        then
+            init_array_usage
+        else
+            eval ${input[@]}
+            if [ $? -ne 0 ]
+            then
+                echo -e "输入'\h'来获取帮助信息。"
+            fi
+            continue
+        fi
+    done
+}
+
+parentheses_usage()
+{
+    echo -e "\n单小括号用途:
+    1     命令组
+    2     命令替换
+    3     用于初始化数组
+    \h    帮助信息(help)
+    \\\\c    清屏(clear)
+    \\\\r    返回上一级(return)
+    \q    退出(quit)\n"
+}
+
+parentheses()
+{
+    parentheses_usage
+
+    while read -e -p "single parentheses> " -r input
+    do
+        case $input in
+        '\r')
+            break
+            ;;
+        '\q')
+            exit 1
+            ;;
+        '\h')
+            parentheses_usage
+            ;;
+        '\c')
+            eval clear
+            ;;
+        '1')
+            command_group
+            ;;
+        '2')
+            command_replace
+            ;;
+        '3')
+            init_array
+            ;;
+        "")
+            continue
+            ;;
+        *)
+            echo "未知命令'$input'"
+            echo -e "输入'\h'来获取帮助信息。"
+            continue
+        esac
+    done
+}
+
+usage()
+{
+    echo -e "\n小括号用法:
+    \h    帮助信息(help)
+    \s    单小括号(single parentheses)
+    \d    双小括号(double parentheses)
+    \\\\c    清屏(clear)
+    \\\\r    返回上一级(return)
+    \q    退出(quit)\n"
+}
+
+main()
+{
+    usage
+
+    while read -e -p "parentheses> " -r input
+    do
+        case $input in
+        '\q')
+            exit 1
+            ;;
+        '\r')
+            exit 0
+            ;;
+        '\h')
+            usage
+            ;;
+        '\c')
+            eval clear
+            ;;
+        '\s')
+            parentheses
+            ;;
+        '\d')
+            doubleparentheses
+            if [ $? -eq 1 ]
+            then
+                exit 1
+            fi
+            ;;
+        '')
+            continue
+            ;;
+        *)
+            echo "未知命令'$input'"
+            echo -e "输入'\h'来获取帮助信息。"
+            continue
+        esac
+    done
+}
+
+main

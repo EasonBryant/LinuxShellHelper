@@ -1,0 +1,72 @@
+#!/bin/sh
+
+REAL_PATH=`readlink /usr/bin/brackets`
+BRACKETS_HOME=`dirname ${REAL_PATH} 2>/dev/null`
+
+welcome()
+{
+    echo "Welcome to Linux Shell brackets helper.
+Copyright (c) 2014, EasonBryant. All rights reserved."
+}
+
+usage()
+{
+    echo -e "\nLinux Shell中各种括号用法:
+    \h    帮助信息(help)
+    \p    小括号(parentheses)
+    \s    中括号(squarebrackets)
+    \\\\b    大括号(braces)
+    \\\\c    清屏(clear)
+    \q    退出(quit)\n"
+}
+
+quit()
+{
+    if [ $1 -eq 1 ]
+    then
+        echo "Bye"
+        exit 0
+    fi
+}
+
+if [ $BRACKETS_HOME ]
+then
+    cd $BRACKETS_HOME
+fi
+
+welcome
+usage
+
+while read -e -p "brackets> " -r input
+do
+    case $input in
+    '\h')
+        usage
+        ;;
+    '\p')
+        parentheses
+        quit $?
+        ;;
+    '\s')
+        squarebrackets
+        quit $?
+        ;;
+    '\b')
+        braces
+        quit $?
+        ;;
+    '\c')
+        eval clear
+        ;;
+    '\q')
+        echo "Bye"
+        exit 0
+        ;;
+    '')
+        continue
+        ;;
+    *)
+        echo -e "无法识别的选项'$input'\n请尝试执行'\h'来获取更多信息。"
+        ;;
+    esac
+done

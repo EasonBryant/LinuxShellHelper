@@ -1,0 +1,227 @@
+#!/bin/sh
+
+elementary_arithmetic_usage()
+{
+    echo -e "\n四则运算用途："
+    echo -e "所有表达式可以像c语言一样，所有变量可以不加入\$符号前缀。"
+    echo -e "支持多个表达式运算，各个表达式之间用,分开。\n"
+    echo "示例："
+    echo -e "> a=1;b=2;c=3"
+    echo -e "> ((a=a+1))"
+    echo -e "> echo \$a"
+    echo -e "2"
+    echo -e "> a=\$((a+1,b++,c++))"
+    echo -e "> echo \$a,\$b,\$c"
+    echo -e "3,3,4\n"
+    echo -e "下面输入框可直接输入命令，'\\\\r'返回上一级，'\q'退出"
+}
+
+elementary_arithmetic()
+{
+    elementary_arithmetic_usage
+
+    while read -e -r -a input -p "double parentheses elementaryarithmetic> "
+    do
+        if [[ $input == '\r' ]]
+        then
+            break
+        elif [[ $input == '\q' ]]
+        then
+            exit 1
+        elif [[ $input == '\h' ]]
+        then
+            elementary_arithmetic_usage
+        else
+            eval ${input[@]}
+            if [ $? -ne 0 ]
+            then
+                echo -e "输入'\h'来获取帮助信息。"
+            fi
+            continue
+        fi
+    done
+}
+
+logic_op_usage()
+{
+    echo -e "\n逻辑运算用途："
+    echo -e "((expr))，若expr为真，则结果为1，反之则结果为0。\n"
+    echo "示例："
+    echo -e "> num=1"
+    echo -e "> echo \$((num>0?2:3))"
+    echo -e "2"
+    echo -e "> ((num==\"1\")) && echo \"num is 1\" # &&表示只有当前面的命令为真才执行后面的命令"
+    echo -e "num is 1"
+    echo -e "> ((num<2))&& echo \"num less than 2\""
+    echo -e "num less than 2\n"
+    echo -e "下面输入框可直接输入命令，'\\\\r'返回上一级，'\q'退出"
+}
+
+logic_op()
+{
+    logic_op_usage
+
+    while read -e -r -a input -p "double parentheses logicop> "
+    do
+        if [[ $input == '\r' ]]
+        then
+            break
+        elif [[ $input == '\q' ]]
+        then
+            exit 1
+        elif [[ $input == '\h' ]]
+        then
+            logic_op_usage
+        else
+            eval ${input[@]}
+            if [ $? -ne 0 ]
+            then
+                echo -e "输入'\h'来获取帮助信息。"
+            fi
+            continue
+        fi
+    done
+}
+
+condition_test_usage()
+{
+    echo -e "\n条件测试运算用途："
+    echo -e "用于扩展for、while、if流程控制语句"
+    echo "示例："
+    echo -e "> num=100;sum=0"
+    echo -e "> for((i=0;i<num;i++));do ((sum+=i));done"
+    echo -e "> echo \$sum"
+    echo -e "4950\n"
+    echo -e "> num=100;sum=0;i=0"
+    echo -e "> while((i<num));do ((sum+=i,i++));done"
+    echo -e "> echo \$sum"
+    echo -e "4950\n"
+    echo -e "> num=100"
+    echo -e "> if((num>=100));then echo \"ok\";fi"
+    echo -e "ok\n"
+    echo -e "下面输入框可直接输入命令，'\\\\r'返回上一级，'\q'退出"
+}
+
+condition_test()
+{
+    condition_test_usage
+
+    while read -e -r -a input -p "parentheses initarray> "
+    do
+        if [[ $input == '\r' ]]
+        then
+            break
+        elif [[ $input == '\q' ]]
+        then
+            exit 1
+        elif [[ $input == '\h' ]]
+        then
+            condition_test_usage
+        else
+            eval ${input[@]}
+            if [ $? -ne 0 ]
+            then
+                echo -e "输入'\h'来获取帮助信息。"
+            fi
+            continue
+        fi
+    done
+}
+
+notice_usage()
+{
+    echo -e "\n注意事项："
+    echo -e "(())中的变量，如果它的值是字符串，该字符串将被当成变量继续获取变量值，直到其值为空或者数值。"
+    echo -e "示例："
+    echo -e "> a=1;b=\"a\";c=\"b\""
+    echo -e "> echo \$((c))"
+    echo -e "1\n"
+    echo -e "下面输入框可直接输入命令，'\\\\r'返回上一级，'\q'退出"
+}
+
+notice()
+{
+    notice_usage
+
+    while read -e -r -a input -p "double parentheses notice> "
+    do
+        if [[ $input == '\r' ]]
+        then
+            break
+        elif [[ $input == '\q' ]]
+        then
+            exit 1
+        elif [[ $input == '\h' ]]
+        then
+            notice_usage
+        else
+            eval ${input[@]}
+            if [ $? -ne 0 ]
+            then
+                echo -e "输入'\h'来获取帮助信息。"
+            fi
+            continue
+        fi
+    done
+}
+
+usage()
+{
+    echo -e "\n双小括号用途:
+用来做算术运算，在双小括号中所有表达式可以像c语言一样，如：a++,b--等，
+甚至是三目运算符，所有变量可以不加入\$符号前缀。
+支持多个表达式运算，各个表达式之间用,分开。
+
+    1     四则运算
+    2     逻辑运算
+    3     条件测试运算(扩展for、while、if流程控制语句)
+    4     注意事项
+    \h    帮助信息(help)
+    \\\\c    清屏(clear)
+    \\\\r    返回上一级(return)
+    \q    退出(quit)\n"
+}
+
+main()
+{
+    usage
+
+    while read -e -p "double parentheses> " -r input
+    do
+        case $input in
+        '\q')
+            exit 1
+            ;;
+        '\r')
+            exit 0
+            ;;
+        '\h')
+            usage
+            ;;
+        '\c')
+            eval clear
+            ;;
+        '1')
+            elementary_arithmetic
+            ;;
+        '2')
+            logic_op
+            ;;
+        '3')
+            condition_test
+            ;;
+        '4')
+            notice
+            ;;
+        '')
+            continue
+            ;;
+        *)
+            echo "未知命令'$input'"
+            echo -e "输入'\h'来获取帮助信息。"
+            continue
+        esac
+    done
+}
+
+main
