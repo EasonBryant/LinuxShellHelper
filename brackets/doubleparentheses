@@ -193,7 +193,7 @@ main()
             exit 1
             ;;
         '\r')
-            exit 0
+            break
             ;;
         '\h')
             usage

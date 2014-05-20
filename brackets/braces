@@ -1,19 +1,121 @@
 #!/bin/sh
 
+expand_usage()
+{
+    echo -e "\n文件名扩展用途："
+    echo -e "Linux将对大括号中的文件名做扩展--通配(globbing)。
+在大括号中，不允许有空白，除非这个空白被引用或转义。\n"
+    echo -e "第一种：对大括号中的以逗号分割的文件列表进行扩展。"
+    echo "示例："
+    echo -e "> touch {a,b,c}.txt"
+    echo -e "> ls {a,b,c}.txt"
+    echo -e "a.txt  b.txt  c.txt"
+    echo -e "> rm -rf {a,b,c}.txt\n"
+    echo -e "第二种：对大括号中以点点(..)分割的顺序文件列表进行扩展。"
+    echo "示例："
+    echo -e "> touch {a..g}.txt"
+    echo -e "> ls {a..e}.txt"
+    echo -e "a.txt  b.txt  c.txt  d.txt  e.txt"
+    echo -e "> ls {{a..c},{e..g}}.txt"
+    echo -e "a.txt  b.txt  c.txt  e.txt  f.txt  g.txt"
+    echo -e "> rm -rf {a..g}.txt\n"
+    echo -e "下面输入框可直接输入命令，'\\\\r'返回上一级，'\q'退出"
+}
+
+expand()
+{
+    expand_usage
+
+    while read -e -r -a input -p "braces expand> "
+    do
+        if [[ $input == '\r' ]]
+        then
+            break
+        elif [[ $input == '\q' ]]
+        then
+            exit 1
+        elif [[ $input == '\h' ]]
+        then
+            expand_usage
+        else
+            eval ${input[@]}
+            if [ $? -ne 0 ]
+            then
+                echo -e "输入'\h'来获取帮助信息。"
+            fi
+            continue
+        fi
+    done
+}
+
+code_block_usage()
+{
+    echo -e "\n代码块用途："
+    echo -e "代码块又被称为内部组，这个结构事实上创建了一个匿名函数。
+与小括号中的命令不同，大括号内的命令不会新开一个子shell运行，即脚本余下部分仍可使用括号内变量。
+括号内的命令间用分号隔开，最后一个也必须有分号。第一个命令和左括号之间必须要有一个空格。\n"
+    echo "示例："
+    echo -e "> { vartest='hi';echo \$vartest;}"
+    echo -e "hi"
+    echo -e "> echo \$vartest"
+    echo -e "hi\n"
+    echo -e "下面输入框可直接输入命令，'\\\\r'返回上一级，'\q'退出"
+}
+
+code_block()
+{
+    code_block_usage
+
+    while read -e -r -a input -p "braces codeblock> "
+    do
+        if [[ $input == '\r' ]]
+        then
+            break
+        elif [[ $input == '\q' ]]
+        then
+            exit 1
+        elif [[ $input == '\h' ]]
+        then
+            code_block_usage
+        else
+            eval ${input[@]}
+            if [ $? -ne 0 ]
+            then
+                echo -e "输入'\h'来获取帮助信息。"
+            fi
+            continue
+        fi
+    done
+}
+
+pattern_match_usage()
+{
+    echo TODO
+}
+
+pattern_match()
+{
+    echo TODO
+}
+
 usage()
 {
     echo -e "\n大括号用法:
+    1     文件名扩展
+    2     代码块
+    3     模式匹配替换结构
+    4     特殊的替换结构
     \h    帮助信息(help)
     \\\\c    清屏(clear)
-    \\\\r    返回上一级
-    \q    退出\n"
+    \\\\r    返回上一级(return)
+    \q    退出(quit)\n"
 }
 
 main()
 {
     usage
 
-    while read -e -r -a input -p "braces> "
+    while read -e -p "braces> " -r input
     do
         case $input in
         '\q')
@@ -28,12 +130,21 @@ main()
         '\h')
             usage
             ;;
+        '1')
+            expand
+            ;;
+        '2')
+            code_block
+            ;;
+        '3')
+            pattern_match
+            ;;
+        '')
+            continue
+            ;;
         *)
-            eval ${input[@]}
-            if [ $? -ne 0 ]
-            then
-                echo -e "输入'\h'来获取帮助信息。"
-            fi
+            echo "未知命令'$input'"
+            echo -e "输入'\h'来获取帮助信息。"
             continue
         esac
     done
