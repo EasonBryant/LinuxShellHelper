@@ -3,10 +3,10 @@
 REAL_PATH=`readlink /usr/bin/brackets`
 BRACKETS_HOME=`dirname ${REAL_PATH} 2>/dev/null`
 
-welcome()
+copyright()
 {
     echo -e "\033[34mWelcome to Linux Shell brackets helper.
-Copyright (c) 2014, EasonBryant. All rights reserved.\033[0m"
+Copyright © 2014, EasonBryant. All rights reserved.\033[0m"
 }
 
 usage()
@@ -34,7 +34,7 @@ then
     cd $BRACKETS_HOME
 fi
 
-welcome
+copyright
 usage
 
 while read -e -p "brackets> " -r input
