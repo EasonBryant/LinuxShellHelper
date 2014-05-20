@@ -1,0 +1,79 @@
+#!/bin/sh
+
+logic_op_usage()
+{
+    echo -e "\n命令替换用法："
+    echo -e "等同于\`cmd\`，shell扫描一遍命令行，发现了\$(cmd)结构，便将\$(cmd)中的cmd执行一次，得到其标准输出，再将此输出放到原来命令。\n"
+    echo "示例："
+    echo -e "> year=\`date +%Y\`"
+    echo -e "> echo \$year"
+    echo -e "2014"
+    echo -e "> month=\$(date +%m)"
+    echo -e "> echo \$month"
+    echo -e "05\n"
+    echo -e "退出请输入quit或exit"
+}
+
+logic_op()
+{
+    logic_op_usage
+
+    while read -e -r -a input -p "parentheses commandreplace> "
+    do
+        if [[ $input == "quit" || $input == "exit" ]]
+        then
+            break
+        elif [[ $input == "\h" ]]
+        then
+            command_replace_usage
+        else
+            eval ${input[@]}
+            if [ $? -ne 0 ]
+            then
+                echo -e "输入\"\h\"来获取帮助信息。"
+            fi
+            continue
+        fi
+    done
+}
+
+usage()
+{
+    echo -e "\n双中括号用法:
+
+    2    逻辑运算\n"
+
+    echo -e "下面输入框可直接输入命令，'\\\\r'返回上一级，'\q'退出"
+}
+
+main()
+{
+    usage
+
+    while read -e -p "double squarebrackets> " -r input
+    do
+        case $input in
+        '\q')
+            exit 1
+            ;;
+        '\r')
+            break
+            ;;
+        "\h")
+            usage
+            ;;
+        '1')
+            logic_op
+            ;;
+        '')
+            continue
+            ;;
+        *)
+            echo "未知命令'$input'"
+            echo -e "输入'\h'来获取帮助信息。"
+            continue
+        esac
+    done
+}
+
+main

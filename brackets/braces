@@ -1,0 +1,42 @@
+#!/bin/sh
+
+usage()
+{
+    echo -e "\n大括号用法:
+    \h    帮助信息(help)
+    \\\\c    清屏(clear)
+    \\\\r    返回上一级
+    \q    退出\n"
+}
+
+main()
+{
+    usage
+
+    while read -e -r -a input -p "braces> "
+    do
+        case $input in
+        '\q')
+            exit 1
+            ;;
+        '\r')
+            break
+            ;;
+        '\c')
+            eval clear
+            ;;
+        '\h')
+            usage
+            ;;
+        *)
+            eval ${input[@]}
+            if [ $? -ne 0 ]
+            then
+                echo -e "输入'\h'来获取帮助信息。"
+            fi
+            continue
+        esac
+    done
+}
+
+main

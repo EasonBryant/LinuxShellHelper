@@ -1,0 +1,90 @@
+#!/bin/sh
+
+squarebrackets_usage()
+{
+    echo -e "\n单中括号用法："
+    echo -e "bash的内部命令，[和test是等同的"
+    echo "示例："
+    echo "下面的输入框可以直接执行命令，'\r'返回上一级，'\q'退出"
+    
+
+}
+
+squarebrackets()
+{
+    squarebrackets_usage
+
+    while read -e -r -a input -p "single squarebrackets> "
+    do
+        if [[ $input == '\q' ]]
+        then
+            exit 1
+        elif [[ $input == '\r' ]]
+        then
+            break
+        elif [[ $input == '\h' ]]
+        then
+            squarebrackets_usage
+        else
+            eval ${input[@]}
+            if [ $? -ne 0 ]
+            then
+                echo -e "输入'\h'来获取帮助信息。"
+            fi
+            continue
+        fi
+    done
+}
+
+usage()
+{
+    echo -e "\n中括号用法:
+    \h    帮助信息(help)
+    \s    单中括号用法
+    \d    双中括号用法
+    \\\\c    清屏(clear)
+    \\\\r    返回上一级(return)
+    \q    退出(quit)\n"
+}
+
+main()
+{
+    usage
+
+    while read -e -p "squarebrackets> " -r input
+    do
+        case $input in
+        '\q')
+            exit 1
+            ;;
+        '\r')
+            break
+            ;;
+        '\c')
+            eval clear
+            ;;
+        '\h')
+            usage
+            ;;
+        '\s')
+            squarebrackets
+            ;;
+        '\d')
+            doublesquarebrackets
+            if [ $? -eq 1 ]
+            then
+                exit 1
+            fi
+            ;;
+        '')
+            continue
+            ;;
+        *)
+            echo "未知命令'$input'"
+            echo -e "输入'\h'来获取帮助信息。"
+            continue
+        esac
+    done
+}
+
+main
