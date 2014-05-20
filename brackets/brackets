@@ -5,8 +5,8 @@ BRACKETS_HOME=`dirname ${REAL_PATH} 2>/dev/null`
 
 welcome()
 {
-    echo "Welcome to Linux Shell brackets helper.
-Copyright (c) 2014, EasonBryant. All rights reserved."
+    echo -e "\033[34mWelcome to Linux Shell brackets helper.
+Copyright (c) 2014, EasonBryant. All rights reserved.\033[0m"
 }
 
 usage()
