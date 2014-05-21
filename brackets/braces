@@ -1,5 +1,30 @@
 #!/bin/sh
 
+var_value_usage()
+{
+    echo -e "\n获取变量值用途："
+    echo -e "\${var}是\$var的原型，一般为了简介方便，获取变量值用\$var即可
+当变量值后面紧跟着字符串(\$varstr)时，我们就需要用\${var}str原型，否则Linux会把varstr当成一个变量。\n"
+    echo "示例："
+    echo -e "> var='hello'"
+    echo -e "> echo \$varworld"
+    echo -e ""
+    echo -e "> echo \${var}world"
+    echo -e "helloworld\n"
+    echo -e "下面输入框可直接输入命令，'\\\\r'返回上一级，'\q'退出"
+}
+
+string_length_usage()
+{
+    echo -e "\n获取变量值长度用途："
+    echo -e "格式：\${#var}\n"
+    echo "示例："
+    echo -e "> var='hello'"
+    echo -e "> echo \${#var}"
+    echo -e "5\n"
+    echo -e "下面输入框可直接输入命令，'\\\\r'返回上一级，'\q'退出"
+}
+
 expand_usage()
 {
     echo -e "\n文件名扩展用途："
@@ -22,32 +47,6 @@ expand_usage()
     echo -e "下面输入框可直接输入命令，'\\\\r'返回上一级，'\q'退出"
 }
 
-expand()
-{
-    expand_usage
-
-    while read -e -r -a input -p "braces expand> "
-    do
-        if [[ $input == '\r' ]]
-        then
-            break
-        elif [[ $input == '\q' ]]
-        then
-            exit 1
-        elif [[ $input == '\h' ]]
-        then
-            expand_usage
-        else
-            eval ${input[@]}
-            if [ $? -ne 0 ]
-            then
-                echo -e "输入'\h'来获取帮助信息。"
-            fi
-            continue
-        fi
-    done
-}
-
 code_block_usage()
 {
     echo -e "\n代码块用途："
@@ -62,11 +61,83 @@ code_block_usage()
     echo -e "下面输入框可直接输入命令，'\\\\r'返回上一级，'\q'退出"
 }
 
-code_block()
+var_replace_usage()
 {
-    code_block_usage
+    echo -e "\n变量值替换用途：\n"
+    echo -e "第一种：\${var:-string}
+若var为空，则结果为string;若var不为空，则结果为var的值。"
+    echo "示例："
+    echo -e "> var='hello'"
+    echo -e "> echo \${var:-'world'}"
+    echo -e "hello"
+    echo -e "> echo \${var1:-'world'}"
+    echo -e "world\n"
+    echo -e "第二种：\${var:=string}
+若var为空，则结果为string，\033[31m同时把string赋予var\033[0m;若var不为空，则结果为var的值。
+常用来判断某个变量是否赋值，没有的话则给它赋上一个默认值。"
+    echo "示例："
+    echo -e "> var='hello'"
+    echo -e "> echo \${var:='world'}"
+    echo -e "hello"
+    echo -e "> echo \${var2:='world'}"
+    echo -e "world"
+    echo -e "> echo \$var2"
+    echo -e "world\n"
+    echo -e "第三种：\${var:+string}
+若var为空，则结果空;若var不为空，则结果为string。"
+    echo "示例："
+    echo -e "> var='hello'"
+    echo -e "> echo \${var:+'world'}"
+    echo -e "world"
+    echo -e "> echo \${var3:+'world'}"
+    echo -e "\n"
+    echo -e "第四种：\${var:?string}
+若var不为空，则结果为var的值;若var为空，则把string输出到标准错误中，并从脚本中退出。
+我们可利用此特性来检查是否设置了变量的值。"
+    echo "示例："
+    echo -e "> var='hello'"
+    echo -e "> echo \${var:?'world'}"
+    echo -e "hello"
+    echo -e "> echo \${var4:?'world'}"
+    echo -e "-bash: var4: world\n"
+    echo -e "下面输入框可直接输入命令，'\\\\r'返回上一级，'\q'退出"
+}
 
-    while read -e -r -a input -p "braces codeblock> "
+pattern_match_usage()
+{
+    echo -e "\n通过模式匹配裁剪变量输出用途：\n"
+    echo -e "第一种：\${var%pattern}
+这种模式时，shell在var中查找，若是以模式pattern结尾，就把var的值去掉右边最短的匹配模式然后输出，var值不变。"
+    echo "示例："
+    echo -e "> var='abcdeabcd'"
+    echo -e "> echo \${var%a*d}"
+    echo -e "abcde\n"
+    echo -e "第二种：\${var%%pattern}
+这种模式时，shell在var中查找，若是以模式pattern结尾，就把var的值去掉右边最长的匹配模式然后输出，var值不变。"
+    echo "示例："
+    echo -e "> var='abcdeabcd'"
+    echo -e "> echo \${var%%b*d}"
+    echo -e "a\n"
+    echo -e "第三种：\${var#pattern}
+这种模式时，shell在var中查找，若是以模式pattern开始，就把var的值去掉左边最短的匹配模式然后输出，var值不变。"
+    echo "示例："
+    echo -e "> var='abcdeabcd'"
+    echo -e "> echo \${var#a*d}"
+    echo -e "eabcd\n"
+    echo -e "第四种：\${var##pattern}
+这种模式时，shell在var中查找，若是以模式pattern开始，就把var的值去掉左边最长的匹配模式然后输出，var值不变。"
+    echo "示例："
+    echo -e "> var='abcdeabcd'"
+    echo -e "> echo \${var##a*c}"
+    echo -e "d\n"
+    echo -e "下面输入框可直接输入命令，'\\\\r'返回上一级，'\q'退出"
+}
+
+command_prompt()
+{
+    $1
+
+    while read -e -r -a input -p "$2"
     do
         if [[ $input == '\r' ]]
         then
@@ -76,7 +147,10 @@ code_block()
             exit 1
         elif [[ $input == '\h' ]]
         then
-            code_block_usage
+            $1
+        elif [[ $input == '\c' ]]
+        then
+            eval clear
         else
             eval ${input[@]}
             if [ $? -ne 0 ]
@@ -88,23 +162,15 @@ code_block()
     done
 }
 
-pattern_match_usage()
-{
-    echo TODO
-}
-
-pattern_match()
-{
-    echo TODO
-}
-
 usage()
 {
     echo -e "\n大括号用法:
-    1     文件名扩展
-    2     代码块
-    3     模式匹配替换结构
-    4     特殊的替换结构
+    1     获取变量值
+    2     字符长度
+    3     文件名扩展
+    4     代码块
+    5     变量值替换
+    6     通过模式匹配裁剪变量输出
     \h    帮助信息(help)
     \\\\c    清屏(clear)
     \\\\r    返回上一级(return)
@@ -131,13 +197,22 @@ main()
             usage
             ;;
         '1')
-            expand
+            command_prompt 'var_value_usage' 'braces varvalue> '
             ;;
         '2')
-            code_block
+            command_prompt 'string_length_usage' 'braces stringlength> '
             ;;
         '3')
-            pattern_match
+            command_prompt 'expand_usage' 'braces expand> '
+            ;;
+        '4')
+            command_prompt 'code_block_usage' 'braces codeblock> '
+            ;;
+        '5')
+            command_prompt 'var_replace_usage' 'braces varreplace> '
+            ;;
+        '6')
+            command_prompt 'pattern_match_usage' 'braces patternmatch> '
             ;;
         '')
             continue
