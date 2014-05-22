@@ -1,30 +1,55 @@
 #!/bin/sh
 
-squarebrackets_usage()
+element_number_usage()
 {
-    echo -e "\n单中括号用法："
-    echo -e "bash的内部命令，[和test是等同的"
+    echo -e "\n用于数组中每个元素的编号：\n"
     echo "示例："
-    echo "下面的输入框可以直接执行命令，'\r'返回上一级，'\q'退出"
-    
-
+    echo -e "> array=(1 2 3 4)"
+    echo -e "> echo \${array[2]}"
+    echo -e "3\n"
+    echo -e "下面输入框可直接输入命令，'\\\\r'返回上一级，'\q'退出"
 }
 
-squarebrackets()
+char_range_usage()
 {
-    squarebrackets_usage
+    echo -e "\n用于描述一个匹配的字符范围："
+    echo -e "用作正则表达式的一部分，描述一个匹配的字符范围。作为test用途的中括号内不能使用正则。"
+    echo -e "[...]匹配集合中任意字符，如"[xyz]"匹配字符x,y,或z"
+    echo -e "[^...]匹配不属集合中的任意字符\n"
+    echo "示例："
+    echo -e "> ls -A | grep '^[a-d]'"
+    echo -e "braces\nbrackets\ndoubleparentheses\ndoublesquarebrackets"
+    echo -e "> ls -A | grep '^[^a-d]'"
+    echo -e "parentheses\nsquarebrackets\n"
+    echo -e "下面输入框可直接输入命令，'\\\\r'返回上一级，'\q'退出"
+}
 
-    while read -e -r -a input -p "single squarebrackets> "
+test_usage()
+{
+    echo -e "\nbash内部命令，等同test："
+    echo -e "[和test是等同的，右中括号是关闭条件判断的。\n"
+    echo "示例："
+    echo -e "下面输入框可直接输入命令，'\\\\r'返回上一级，'\q'退出"
+}
+
+command_prompt()
+{
+    $1
+
+    while read -e -r -a input -p "$2"
     do
-        if [[ $input == '\q' ]]
-        then
-            exit 1
-        elif [[ $input == '\r' ]]
+        if [[ $input == '\r' ]]
         then
             break
+        elif [[ $input == '\q' ]]
+        then
+            exit 1
         elif [[ $input == '\h' ]]
         then
-            squarebrackets_usage
+            $1
+        elif [[ $input == '\c' ]]
+        then
+            eval clear
         else
             eval ${input[@]}
             if [ $? -ne 0 ]
@@ -33,6 +58,57 @@ squarebrackets()
             fi
             continue
         fi
+    done
+}
+
+squarebrackets_usage()
+{
+    echo -e "\n单中括号用法：
+    1     数组中每个元素的编号
+    2     用作正则表达式的一部分，描述一个匹配的字符范围
+    3     bash内部命令，等同test
+    \h    帮助信息(help)
+    \\\\c    清屏(clear)
+    \\\\r    返回上一级(return)
+    \q    退出(quit)\n"
+}
+
+squarebrackets()
+{
+    squarebrackets_usage
+
+    while read -e -p "single squarebrackets> " -r input
+    do
+        case $input in
+        '\r')
+            break
+            ;;
+        '\q')
+            exit 1
+            ;;
+        '\h')
+            squarebrackets_usage
+            ;;
+        '\c')
+            eval clear
+            ;;
+        '1')
+            command_prompt 'element_number_usage' 'single squarebrackets elementnumber> '
+            ;;
+        '2')
+            command_prompt 'char_range_usage' 'single squarebrackets charrange> '
+            ;;
+        '3')
+            command_prompt 'test_usage' 'single squarebrackets test> '
+            ;;
+        "")
+            continue
+            ;;
+        *)
+            echo "未知命令'$input'"
+            echo -e "输入'\h'来获取帮助信息。"
+            continue
+        esac
     done
 }
 

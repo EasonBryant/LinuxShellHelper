@@ -1,36 +1,42 @@
 #!/bin/sh
 
-logic_op_usage()
+condition_usage()
 {
-    echo -e "\n命令替换用法："
-    echo -e "等同于\`cmd\`，shell扫描一遍命令行，发现了\$(cmd)结构，便将\$(cmd)中的cmd执行一次，得到其标准输出，再将此输出放到原来命令。\n"
+    echo -e "\n用于条件判断："
+    echo -e "使用[[ ]]条件判断结构而不是[ ]，能够防止脚本中的许多逻辑错误。
+比如&&、||、<和>操作符能够正常存在于[[ ]]条件判断结构中，但是如果出现在[ ]结构中的话，会报错。
+另外，使用=操作符时[[ ]]支持shell的正则表达式。比如[[ hello == hell? ]]的结果为真。\n"
     echo "示例："
-    echo -e "> year=\`date +%Y\`"
-    echo -e "> echo \$year"
-    echo -e "2014"
-    echo -e "> month=\$(date +%m)"
-    echo -e "> echo \$month"
-    echo -e "05\n"
-    echo -e "退出请输入quit或exit"
+    echo -e "> if [[ hello == h*o && hello == he??o ]];then echo hello;fi"
+    echo -e "hello"
+    echo -e "> if [[ 2 < 1 || 3 > 2 ]];then echo ok;fi"
+    echo -e "ok\n"
+    echo -e "下面输入框可直接输入命令，'\\\\r'返回上一级，'\q'退出"
 }
 
-logic_op()
+command_prompt()
 {
-    logic_op_usage
+    $1
 
-    while read -e -r -a input -p "parentheses commandreplace> "
+    while read -e -r -a input -p "$2"
     do
-        if [[ $input == "quit" || $input == "exit" ]]
+        if [[ $input == '\r' ]]
         then
             break
-        elif [[ $input == "\h" ]]
+        elif [[ $input == '\q' ]]
         then
-            command_replace_usage
+            exit 1
+        elif [[ $input == '\h' ]]
+        then
+            $1
+        elif [[ $input == '\c' ]]
+        then
+            eval clear
         else
             eval ${input[@]}
             if [ $? -ne 0 ]
             then
-                echo -e "输入\"\h\"来获取帮助信息。"
+                echo -e "输入'\h'来获取帮助信息。"
             fi
             continue
         fi
@@ -39,11 +45,15 @@ logic_op()
 
 usage()
 {
-    echo -e "\n双中括号用法:
+    echo -e "\n双中括号用途：
+[[是shell的关键字，并不是一个命令。
+在[[ ]]之间所有的字符都不会发生文件名扩展或者单词分割，但是会发生参数扩展和命令替换。\n
 
-    2    逻辑运算\n"
-
-    echo -e "下面输入框可直接输入命令，'\\\\r'返回上一级，'\q'退出"
+    1     用于条件判断
+    \h    帮助信息(help)
+    \\\\c    清屏(clear)
+    \\\\r    返回上一级(return)
+    \q    退出(quit)\n"
 }
 
 main()
@@ -59,11 +69,14 @@ main()
         '\r')
             break
             ;;
-        "\h")
+        '\h')
             usage
             ;;
+        '\c')
+            eval clear
+            ;;
         '1')
-            logic_op
+            command_prompt 'condition_usage' 'double squarebrackets condition> '
             ;;
         '')
             continue
